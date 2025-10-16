@@ -14,3 +14,6 @@ cmake --build .
 
 ## Pre-request
 MLIR build with llvm-project 18.0.1
+
+## Paper
+https://dl.acm.org/doi/abs/10.1145/3704727

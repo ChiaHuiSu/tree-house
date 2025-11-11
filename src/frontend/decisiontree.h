@@ -94,7 +94,7 @@ namespace Treehierarchy
         void SetInitialValue(double value) { m_initialValue = value; }
         void SetObjective(PredictionTransformation val) { m_objective = val; }
         void SetRegNum(size_t regNum) { m_regNum = regNum; }
-        void SetFeatureProb(std::pair<unsigned, float> input) 
+        void SetFeatureProb(std::pair<unsigned, float> input)
         {
             bool found = false;
             for (auto& pair : m_featureProb) 
@@ -141,7 +141,7 @@ namespace Treehierarchy
         }
         int GetGlobalIdxFromFeature(size_t feature)
         {
-            for(size_t i = 0; i < m_regNum; i++)
+            for(size_t i = 0; i < std::min(m_regNum, m_featureProb.size()); i++)
             {
                 if(m_featureProb[i].first == feature)
                     return i;

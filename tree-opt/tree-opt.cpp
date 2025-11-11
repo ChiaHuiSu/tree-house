@@ -20,11 +20,13 @@
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/ToolOutputFile.h"
 
+#include "mlir/Dialect/Func/IR/FuncOps.h"
+
 #include "Tree/TreeDialect.h"
 #include "Tree/TreePasses.h"
 
 int main(int argc, char **argv) {
-  mlir::registerAllPasses();
+  //mlir::registerAllPasses();
   mlir::tree::registerPasses();
   // TODO: Register tree passes here.
 

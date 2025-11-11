@@ -4,6 +4,8 @@ set(LIBS
         ${dialect_libs}
         ${conversion_libs}
         MLIRArithDialect
+        MLIRFuncInlinerExtension
+        MLIRLLVMDialect
         MLIROptLib
         MLIRTree
         MLIRExecutionEngine

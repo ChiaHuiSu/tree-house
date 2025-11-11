@@ -15,4 +15,7 @@ add_mlir_dialect_library(MLIRTree
         MLIRIR
         MLIRInferTypeOpInterface
         MLIRFuncDialect
+        MLIRArithDialect
+        MLIRVectorDialect
+        MLIRControlFlowDialect
         )

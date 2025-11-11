@@ -8,22 +8,36 @@ bool RunXGBoostBenchmarksIfNeeded(int argc, char *argv[]) {
     for (int32_t i = 0; i < argc; i++)
         if (std::string(argv[i]).find(std::string("--xgboostBench")) != std::string::npos) {
             test::RunXGBoostNonOptimizeTests();
-            test::RunXGBoostSwapOptimizeTests();
-            test::RunXGBoostFlintOptimizeTests();
+            test::RunXGBoostHoistingOptimizeTests();
+            test::RunXGBoostOrderingOptimizeTests();
+            test::RunXGBoostNoHostingOptimizeTests();
+            test::RunXGBoostNoOrderingOptimizeTests();
+            test::RunXGBoostThreeOptimizeTests();
             test::RunXGBoostOptimizeTests();
+
+            test::RunXGBoostNonOptimizeTests();
+            test::RunXGBoostHoistingOptimizeTests();
+            test::RunXGBoostOrderingOptimizeTests();
+            test::RunXGBoostNoHostingOptimizeTests();
+            test::RunXGBoostNoOrderingOptimizeTests();
+            test::RunXGBoostThreeOptimizeTests();
+            test::RunXGBoostOptimizeTests();
+            //test::RunXGBoostHoistingOptimizeTests();
+            //test::RunXGBoostSwapOptimizeTests();
+            //test::RunXGBoostFlintOptimizeTests();
+            //test::RunXGBoostOptimizeTests();
             return true;
         }
     return false;
 }
 
 bool RunSklearnBenchmarksIfNeeded(int argc, char *argv[]) {
-
     for (int32_t i = 0; i < argc; i++)
         if (std::string(argv[i]).find(std::string("--sklearnBench")) != std::string::npos) {
-            test::RunSKlearnOptimizeTests();
-            test::RunSKlearnFlintOptimizeTests();
-            test::RunSKlearnSwapOptimizeTests();
             test::RunSKlearnNonOptimizeTests();
+            test::RunSKlearnSwapOptimizeTests();
+            test::RunSKlearnFlintOptimizeTests();
+            test::RunSKlearnOptimizeTests();
             return true;
         }
     return false;
@@ -42,7 +56,7 @@ bool RunCorrectnessTestIfNeeded(int argc, char *argv[]) {
 bool DumpLLVMIRIfNeeded(int argc, char *argv[]) {
     for (int32_t i = 0; i < argc; i++)
         if (std::string(argv[i]).find(std::string("--dump")) != std::string::npos) {
-            test::DumpXGBoostLLVMIR();        
+            test::DumpXGBoostLLVMIR();
             test::DumpSKlearnLLVMIR();
             return true;
         }

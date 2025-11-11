@@ -108,8 +108,8 @@ namespace Treehierarchy
                 SklearnParser parser(modelJsonPath, option);
 
                 auto time = RunSklearnTest(parser, testCsvPath);
-                std::cout << modelName << " time consuming: " << time << "\n\n";
-            }           
+                std::cout << modelName << " time consuming: " << time << "\n";
+            }
         }
 
         void RunSKlearnSwapOptimizeTests()
@@ -126,8 +126,8 @@ namespace Treehierarchy
                 SklearnParser parser(modelJsonPath, option);
 
                 auto time = RunSklearnTest(parser, testCsvPath);
-                std::cout << modelName << " time consuming: " << time << "\n\n";
-            }           
+                std::cout << modelName << " time consuming: " << time << "\n";
+            }
         }
 
         void RunSKlearnFlintOptimizeTests()
@@ -144,8 +144,8 @@ namespace Treehierarchy
                 SklearnParser parser(modelJsonPath, option);
 
                 auto time = RunSklearnTest(parser, testCsvPath);
-                std::cout << modelName << " time consuming: " << time << "\n\n";
-            }           
+                std::cout << modelName << " time consuming: " << time << "\n";
+            }
         }
 
         void RunSKlearnOptimizeTests()
@@ -179,10 +179,9 @@ namespace Treehierarchy
                 auto answerCsvPath = testModelsDir + "/" + modelName + ".answer.csv";
 
                 BuildOptions option;
-                option.enable_swap = false;
-                option.enable_flint = false;
-                option.enable_ra = false;
-                option.regNum = 32;
+                // option.enable_swap = true;
+                // option.enable_flint = true;
+                option.enable_ordering = true;
                 SklearnParser parser(modelJsonPath, option);
 
                 verifySKlearnResult(parser, testCsvPath, answerCsvPath);
@@ -199,15 +198,24 @@ namespace Treehierarchy
                 auto modelJsonPath = testModelsDir + "/" + modelName + ".json";
                 auto dumpFileName =  GetRepoPath() + "/skll/" + modelName + ".ll";
 
+                std::filesystem::create_directory(GetRepoPath() + "/skll");
+
                 BuildOptions option;
-                option.enable_swap = false;
-                option.enable_flint = false;
-                option.enable_ra = false;
-                option.regNum = 32;
+                //option.enable_swap = true;
+                //option.enable_flint = true;
+                //option.enable_hoisting = true;
+                option.enable_ordering = true;
+                option.enable_inline = true;
                 SklearnParser parser(modelJsonPath, option);
                 parser.ConstructForest();
                 ModuleOp module = parser.buildHIRModule();
                 module = parser.lowerToLLVMModule();
+
+                /*llvm::outs() << "File output\n";
+                std::error_code ec;
+                llvm::raw_fd_ostream filestream(dumpFileName, ec);
+                filestream << *module;*/
+                //exit(0);
 
                 DumpLLVMIRToFile(module, dumpFileName);
             }

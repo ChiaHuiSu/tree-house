@@ -9,6 +9,11 @@ namespace Treehierarchy
         void RunXGBoostNonOptimizeTests();
         void RunXGBoostSwapOptimizeTests();
         void RunXGBoostFlintOptimizeTests();
+        void RunXGBoostHoistingOptimizeTests();
+        void RunXGBoostOrderingOptimizeTests();
+        void RunXGBoostThreeOptimizeTests();
+        void RunXGBoostNoHostingOptimizeTests();
+        void RunXGBoostNoOrderingOptimizeTests();
         void RunXGBoostOptimizeTests();
         void RunXGBoostCorrectnessTests();
         void DumpXGBoostLLVMIR();

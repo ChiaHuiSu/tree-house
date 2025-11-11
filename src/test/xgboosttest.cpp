@@ -1,5 +1,6 @@
 #include <libgen.h>
 #include <unistd.h>
+#include <filesystem>
 
 #include "maintest.h"
 #include "modulerunner.h"
@@ -11,8 +12,7 @@ namespace Treehierarchy
 {
     namespace test
     {    
-        // const std::string modelNames[] = {"abalone", "airline", "airline-ohe", "covtype", "epsilon", "letters", "higgs", "year_prediction_msd"};
-        const std::string modelNames[] = {"abalone", "airline", "airline-ohe", "covtype", "epsilon", "higgs", "year_prediction_msd"};
+        const std::string modelNames[] = {"abalone", "airline", "airline-ohe", "covtype", "epsilon", "letters", "higgs", "year_prediction_msd"};
         const int32_t NUM_RUNS = 500;
 
         static std::string GetRepoPath()
@@ -63,7 +63,7 @@ namespace Treehierarchy
                     assert(answers[i] == a);
                 } else {
                     assert(FPEqual(answers[i], result[0], epsilon));
-                }   
+                }
                 i++;
             }
         }
@@ -75,7 +75,7 @@ namespace Treehierarchy
             ModuleOp module = parser.buildHIRModule();
             module = parser.lowerToLLVMModule();
 
-            module->dump();
+            // module->dump();
 
             Execute::ModuleRunner runner(module);
 
@@ -109,9 +109,10 @@ namespace Treehierarchy
 
         void RunXGBoostNonOptimizeTests()
         {
-            std::puts("Running Without Optimize...\n");
+            std::puts("Running Without Optimize...");
+            int counter = 0;
             for (auto modelName : modelNames)
-            {
+            {if (++counter > 5) break;
                 auto testModelsDir = GetRepoPath() + "/data/xgb_models";
                 auto modelJsonPath = testModelsDir + "/" + modelName + ".json";
                 auto testCsvPath = testModelsDir + "/" + modelName + ".test.csv";
@@ -119,13 +120,13 @@ namespace Treehierarchy
                 BuildOptions option;
                 XGBoostParser parser(modelJsonPath, option);
 
-                std::cout << modelName << "time consuming: " << RunXGBoostTest(parser, testCsvPath) << "\n";
+                std::cout << modelName << " time consuming: " << RunXGBoostTest(parser, testCsvPath) << "\n";
             }
         }
 
         void RunXGBoostSwapOptimizeTests()
         {
-            std::puts("Running Swap Optimize...\n");
+            std::puts("Running Swap Optimize...");
             for (auto modelName : modelNames)
             {
                 auto testModelsDir = GetRepoPath() + "/data/xgb_models";
@@ -142,7 +143,7 @@ namespace Treehierarchy
 
         void RunXGBoostFlintOptimizeTests()
         {
-            std::puts("Running Flint Optimize...\n");
+            std::puts("Running Flint Optimize...");
             for (auto modelName : modelNames)
             {
                 auto testModelsDir = GetRepoPath() + "/data/xgb_models";
@@ -157,11 +158,50 @@ namespace Treehierarchy
             }
         }
 
-        void RunXGBoostOptimizeTests()
+        void RunXGBoostHoistingOptimizeTests()
         {
-            std::puts("Running Optimize...");
+            std::puts("Running Hoisting Optimize...");
+            int counter = 0;
             for (auto modelName : modelNames)
-            {
+            {if (++counter > 5) break;
+                auto testModelsDir = GetRepoPath() + "/data/xgb_models";
+                auto modelJsonPath = testModelsDir + "/" + modelName + ".json";
+                auto stateCsvPath = testModelsDir + "/" + modelName + ".prob.csv";
+                auto testCsvPath = testModelsDir + "/" + modelName + ".test.csv";
+
+                BuildOptions option;
+                option.enable_hoisting = true;
+                XGBoostParser parser(modelJsonPath, option, stateCsvPath);
+
+                std::cout << modelName << " time consuming: " << RunXGBoostTest(parser, testCsvPath) << "\n";
+            }
+        }
+
+        void RunXGBoostOrderingOptimizeTests()
+        {
+            std::puts("Running Ordering Optimize...");
+            int counter = 0;
+            for (auto modelName : modelNames)
+            {if (++counter > 5) break;
+                auto testModelsDir = GetRepoPath() + "/data/xgb_models";
+                auto modelJsonPath = testModelsDir + "/" + modelName + ".json";
+                auto stateCsvPath = testModelsDir + "/" + modelName + ".prob.csv";
+                auto testCsvPath = testModelsDir + "/" + modelName + ".test.csv";
+
+                BuildOptions option;
+                option.enable_ordering = true;
+                XGBoostParser parser(modelJsonPath, option, stateCsvPath);
+
+                std::cout << modelName << " time consuming: " << RunXGBoostTest(parser, testCsvPath) << "\n";
+            }
+        }
+
+        void RunXGBoostThreeOptimizeTests()
+        {
+            std::puts("Running Three Optimize...");
+            int counter = 0;
+            for (auto modelName : modelNames)
+            {if (++counter > 5) break;
                 auto testModelsDir = GetRepoPath() + "/data/xgb_models";
                 auto modelJsonPath = testModelsDir + "/" + modelName + ".json";
                 auto stateCsvPath = testModelsDir + "/" + modelName + ".prob.csv";
@@ -171,6 +211,73 @@ namespace Treehierarchy
                 option.enable_swap = true;
                 option.enable_flint = true;
                 option.enable_ra = true;
+                XGBoostParser parser(modelJsonPath, option, stateCsvPath);
+
+                std::cout << modelName << " time consuming: " << RunXGBoostTest(parser, testCsvPath) << "\n";
+            }
+        }
+
+        void RunXGBoostNoHostingOptimizeTests()
+        {
+            std::puts("Running No Hosting Optimize...");
+            int counter = 0;
+            for (auto modelName : modelNames)
+            {if (++counter > 5) break;
+                auto testModelsDir = GetRepoPath() + "/data/xgb_models";
+                auto modelJsonPath = testModelsDir + "/" + modelName + ".json";
+                auto stateCsvPath = testModelsDir + "/" + modelName + ".prob.csv";
+                auto testCsvPath = testModelsDir + "/" + modelName + ".test.csv";
+
+                BuildOptions option;
+                option.enable_swap = true;
+                option.enable_flint = true;
+                option.enable_ra = true;
+                option.enable_ordering = true;
+                XGBoostParser parser(modelJsonPath, option, stateCsvPath);
+
+                std::cout << modelName << " time consuming: " << RunXGBoostTest(parser, testCsvPath) << "\n";
+            }
+        }
+
+        void RunXGBoostNoOrderingOptimizeTests()
+        {
+            std::puts("Running No Ordering Optimize...");
+            int counter = 0;
+            for (auto modelName : modelNames)
+            {if (++counter > 5) break;
+                auto testModelsDir = GetRepoPath() + "/data/xgb_models";
+                auto modelJsonPath = testModelsDir + "/" + modelName + ".json";
+                auto stateCsvPath = testModelsDir + "/" + modelName + ".prob.csv";
+                auto testCsvPath = testModelsDir + "/" + modelName + ".test.csv";
+
+                BuildOptions option;
+                option.enable_swap = true;
+                option.enable_flint = true;
+                option.enable_ra = true;
+                option.enable_hoisting = true;
+                XGBoostParser parser(modelJsonPath, option, stateCsvPath);
+
+                std::cout << modelName << " time consuming: " << RunXGBoostTest(parser, testCsvPath) << "\n";
+            }
+        }
+
+        void RunXGBoostOptimizeTests()
+        {
+            std::puts("Running Optimize...");
+            int counter = 0;
+            for (auto modelName : modelNames)
+            {if (++counter > 5) break;
+                auto testModelsDir = GetRepoPath() + "/data/xgb_models";
+                auto modelJsonPath = testModelsDir + "/" + modelName + ".json";
+                auto stateCsvPath = testModelsDir + "/" + modelName + ".prob.csv";
+                auto testCsvPath = testModelsDir + "/" + modelName + ".test.csv";
+
+                BuildOptions option;
+                option.enable_swap = true;
+                option.enable_flint = true;
+                option.enable_ra = true;
+                option.enable_hoisting = true;
+                option.enable_ordering = true;
                 XGBoostParser parser(modelJsonPath, option, stateCsvPath);
 
                 std::cout << modelName << " time consuming: " << RunXGBoostTest(parser, testCsvPath) << "\n";
@@ -189,10 +296,12 @@ namespace Treehierarchy
                 auto answerCsvPath = testModelsDir + "/" + modelName + ".answer.csv";
 
                 BuildOptions option;
-                option.enable_swap = false;
-                option.enable_flint = false;
-                option.enable_ra = false;
-                option.regNum = 32;
+                //option.enable_swap = true;
+                //option.enable_flint = true;
+                //option.enable_ra = true;
+                //option.regNum = 16;
+                //option.enable_hoisting = true;
+                option.enable_ordering = true;
                 XGBoostParser parser(modelJsonPath, option, stateCsvPath);
 
                 verifyXGBoostResult(parser, testCsvPath, answerCsvPath);
@@ -210,17 +319,28 @@ namespace Treehierarchy
                 auto stateCsvPath = testModelsDir + "/" + modelName + ".prob.csv";
                 auto dumpFileName =  GetRepoPath() + "/xgll/" + modelName + ".ll";
 
+                std::filesystem::create_directory(GetRepoPath() + "/xgll");
+
                 BuildOptions option;
-                option.enable_swap = false;
-                option.enable_flint = false;
-                option.enable_ra = false;
-                option.regNum = 32;
+                //option.enable_swap = true;
+                //option.enable_flint = true;
+                //option.enable_hoisting = true;
+                option.enable_ordering = true;
+                option.enable_inline = true;
 
                 XGBoostParser parser(modelJsonPath, option, stateCsvPath);
                 parser.ConstructForest();
                 ModuleOp module = parser.buildHIRModule();
                 module = parser.lowerToLLVMModule();
 
+                llvm::outs() << "File output\n";
+                std::error_code ec;
+                llvm::raw_fd_ostream filestream(dumpFileName, ec);
+
+                /*filestream << *module;
+                filestream.flush();
+                exit(0);*/
+                // Tree op error
                 DumpLLVMIRToFile(module, dumpFileName);
             }
         }

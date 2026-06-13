@@ -15,6 +15,35 @@ using namespace mlir::tree;
 
 #include "Tree/TreeOpsDialect.cpp.inc"
 
+//#include "mlir/Interfaces/CallInterfaces.h"
+#include "mlir/Transforms/InliningUtils.h"
+#include "mlir/Dialect/Func/IR/FuncOps.h"
+
+struct TreeDialectInlinerInterface : public DialectInlinerInterface {
+  using DialectInlinerInterface::DialectInlinerInterface;
+  bool isLegalToInline(Operation *call,
+                       Operation *callable,
+                       bool wouldBeCloned) const final {
+    return true;
+  }
+  bool isLegalToInline(Operation *,
+                       Region *,
+                       bool,
+                       IRMapping &) const final {
+    return true;
+  }
+  void handleTerminator(Operation *op,
+                        ValueRange valuesToReplace) const final {
+    if (auto returnOp = dyn_cast<func::ReturnOp>(op)) {
+      for (auto [operand, result] :
+           llvm::zip(returnOp.getOperands(), valuesToReplace)) {
+        result.replaceAllUsesWith(operand);
+      }
+    }
+  }
+  void handleTerminator(Operation *op, Block *newDest) const final {}
+};
+
 //===----------------------------------------------------------------------===//
 // Tree dialect.
 //===----------------------------------------------------------------------===//
@@ -25,4 +54,5 @@ void TreeDialect::initialize() {
 #include "Tree/TreeOps.cpp.inc"
       >();
   registerTypes();
+  addInterfaces<TreeDialectInlinerInterface>();
 }

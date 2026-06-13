@@ -12,6 +12,7 @@
 include "Tree/TreeTypes.td"
 include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
+include "mlir/Interfaces/ControlFlowInterfaces.td"
 
 include "mlir/Dialect/Arith/IR/ArithBase.td"
 include "mlir/Dialect/Arith/IR/ArithOpsInterfaces.td"
@@ -118,23 +119,37 @@ def Tree_IntFeatureOp : Tree_Op<"intFeature",
 
     let extraClassDeclaration = [{
         static void build(OpBuilder &builder, OperationState &odsState,
-                          Value featureAddr, int64_t featureIndex,
+                          Value feature, int threshold,
+                          arith::CmpIPredicate predicate,
+                          double trueProbability, double falseProbability,
+                          Block *trueDest, Block *falseDest) {
+            odsState.addOperands(feature);
+            odsState.addAttribute("threshold", builder.getI32IntegerAttr(threshold));
+            odsState.addAttribute("thresholdIndex", builder.getIndexAttr(-1));
+            odsState.addAttribute("predicate", arith::CmpIPredicateAttr::get(builder.getContext(), predicate));
+            odsState.addAttribute("trueProbability", builder.getF64FloatAttr(trueProbability));
+            odsState.addAttribute("falseProbability", builder.getF64FloatAttr(falseProbability));
+            odsState.addSuccessors(trueDest);
+            odsState.addSuccessors(falseDest);
+        }
+        static void build(OpBuilder &builder, OperationState &odsState,
+                          Value feature, int64_t featureIndex,
                           LLVM::GlobalOp global) {
-            odsState.addOperands(featureAddr);
+            odsState.addOperands(feature);
             odsState.addAttribute("featureIndex", builder.getIndexAttr(featureIndex));
             odsState.addAttribute("globalName", FlatSymbolRefAttr::get(builder.getContext(), global.getSymName()));
             odsState.addTypes(builder.getI32Type());
         }
         static void build(OpBuilder &builder, OperationState &odsState,
-                          Value featureAddr, int64_t featureIndex) {
-            odsState.addOperands(featureAddr);
+                          Value feature, int64_t featureIndex) {
+            odsState.addOperands(feature);
             odsState.addAttribute("featureIndex", builder.getIndexAttr(featureIndex));
             odsState.addTypes(builder.getI32Type());
         }
     }];
 }
 
-def Tree_FloatNodeOp : Tree_Op<"floatNode", [Terminator]> {
+def Tree_FloatNodeOp : Tree_Op<"floatNode", [BranchOpInterface, Terminator]> {
     let summary = "Decision tree node with F32 comparison";
 
     let description = [{
@@ -191,10 +206,13 @@ def Tree_FloatNodeOp : Tree_Op<"floatNode", [Terminator]> {
             odsState.addSuccessors(trueDest);
             odsState.addSuccessors(falseDest);
         }
+        SuccessorOperands getSuccessorOperands(unsigned index) {
+            return SuccessorOperands(0, MutableOperandRange(*this, 0, 0));
+        }
     }];
 }
 
-def Tree_IntNodeOp : Tree_Op<"intNode", [Terminator]> {
+def Tree_IntNodeOp : Tree_Op<"intNode", [BranchOpInterface, Terminator]> {
     let summary = "Decision tree node with I32 comparison";
 
     let description = [{
@@ -251,6 +269,9 @@ def Tree_IntNodeOp : Tree_Op<"intNode", [Terminator]> {
             odsState.addAttribute("falseProbability", builder.getF64FloatAttr(falseProbability));
             odsState.addSuccessors(trueDest);
             odsState.addSuccessors(falseDest);
+        }
+        SuccessorOperands getSuccessorOperands(unsigned index) {
+            return SuccessorOperands(0, MutableOperandRange(*this, 0, 0));
         }
     }];
 }

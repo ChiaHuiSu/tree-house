@@ -27,6 +27,23 @@ def TreeSwitchBarFoo: Pass<"tree-switch-bar-foo", "::mlir::ModuleOp"> {
     }];
 }
 */
+def TreeReorder: Pass<"tree-reorder", "::mlir::ModuleOp"> {
+    let summary = "Reorder tree_ functions based on the probability distribution of features.";
+    let description = [{
+        Reorder tree_ functions based on the probability distribution of features or/and thresholds.
+        Calculate distance using N-dimension Euclidean distance, Jensen–Shannon divergence, or Manhattan distance.
+        Minimize Hamiltonian path using customized LKH-2 TSP solver.
+    }];
+    let options = [
+        Option<"isFLIntEnabled", "is-flint-enabled", "bool", /*default=*/"false",
+               "If FLInt is enabled, this option should be set to true to have correct thresholds.">,
+        Option<"useFeature", "use-feature", "bool", /*default=*/"false",
+               "Reorder trees based on features.">,
+        Option<"useThreshold", "use-threshold", "bool", /*default=*/"false",
+               "Reorder trees based on thresholds by assuming thresholdOrdering is enabled.">
+    ];
+}
+
 def TreeInline: Pass<"tree-inline", "::mlir::ModuleOp"> {
     let summary = "Inline tree_ functions.";
     let description = [{
@@ -34,6 +51,10 @@ def TreeInline: Pass<"tree-inline", "::mlir::ModuleOp"> {
         Replace func::ReturnOP with cf::BranchOp.
         Remove func::FuncOp and func::CallOp.
     }];
+    let options = [
+        Option<"pinningAmount", "pinning-amount", "size_t", /*default=*/"0",
+               "Hoist feature load of k (0~32) most used features to the top of the program.">
+    ];
 }
 
 def TreeSwap: Pass<"tree-swap", "::mlir::ModuleOp"> {

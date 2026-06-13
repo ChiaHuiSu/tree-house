@@ -179,9 +179,12 @@ namespace Treehierarchy
                 auto answerCsvPath = testModelsDir + "/" + modelName + ".answer.csv";
 
                 BuildOptions option;
-                // option.enable_swap = true;
-                // option.enable_flint = true;
-                option.enable_ordering = true;
+                option.enable_swap = true;
+                option.enable_flint = true;
+                option.regNum = 32;
+                option.enable_threshold_dedupe = true;
+                option.enable_inline = true;
+                option.enable_reorder = true;
                 SklearnParser parser(modelJsonPath, option);
 
                 verifySKlearnResult(parser, testCsvPath, answerCsvPath);
@@ -201,11 +204,16 @@ namespace Treehierarchy
                 std::filesystem::create_directory(GetRepoPath() + "/skll");
 
                 BuildOptions option;
-                //option.enable_swap = true;
-                //option.enable_flint = true;
+                option.enable_swap = true;
+                option.enable_flint = true;
                 //option.enable_hoisting = true;
-                option.enable_ordering = true;
+                option.regNum = 32;
+                option.enable_threshold_dedupe = true;
                 option.enable_inline = true;
+                option.enable_reorder = true;
+                option.enable_reorder_feature = true;
+                option.enable_reorder_threshold = true;
+
                 SklearnParser parser(modelJsonPath, option);
                 parser.ConstructForest();
                 ModuleOp module = parser.buildHIRModule();
@@ -214,7 +222,8 @@ namespace Treehierarchy
                 /*llvm::outs() << "File output\n";
                 std::error_code ec;
                 llvm::raw_fd_ostream filestream(dumpFileName, ec);
-                filestream << *module;*/
+                filestream << *module;
+                filestream.flush();*/
                 //exit(0);
 
                 DumpLLVMIRToFile(module, dumpFileName);

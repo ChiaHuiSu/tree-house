@@ -23,9 +23,6 @@ namespace Treehierarchy
         void CreateLeafNode(Value result, DecisionTree::Node node) override;
 
         arith::CmpFPredicate getComparePredicate() override { return arith::CmpFPredicate::OLE; }
-        arith::CmpFPredicate getReverseComparePredicate() override { return arith::CmpFPredicate::OGT; }
-        LLVM::ICmpPredicate getCompareIntPredicate() override { return LLVM::ICmpPredicate::sle; }
-        LLVM::ICmpPredicate getReverseCompareIntPredicate() override { return LLVM::ICmpPredicate::sgt; }
 
         FunctionType getTreeFunctionType() override {
             Type argType = getPointerType();
@@ -99,9 +96,9 @@ namespace Treehierarchy
         }
 
         // Todo: Maybe a better way to get feature size
-        for(auto node: m_decisionTree->GetNodes()) {
+        for (auto node: m_decisionTree->GetNodes()) {
             m_forest->SetFeatureProb(std::make_pair(node.featureIndex, node.probability));
-            if(m_forest->GetFeatureSize() < node.featureIndex + 1)
+            if (m_forest->GetFeatureSize() < node.featureIndex + 1)
                 m_forest->SetFeatureSize(node.featureIndex + 1);
         }
         m_forest->SortFeatureProb();
@@ -134,8 +131,7 @@ namespace Treehierarchy
         auto loc = m_builder.getUnknownLoc();
         for (size_t i = 0; i < node.result.size(); i++)
         {
-            if(node.result[i] != 0.0) {
-                //Value resultIdx = m_builder.create<arith::ConstantIntOp>(loc, i, getI32());
+            if (node.result[i] != 0.0) {
                 Value resultIdx = m_builder.create<arith::ConstantIntOp>(loc, i, 32);
                 Value resultPtr = m_builder.create<LLVM::GEPOp>(loc, getPointerType(), getF32(), result, resultIdx);
                 Value loadVal = m_builder.create<LLVM::LoadOp>(loc, getF32(), resultPtr);

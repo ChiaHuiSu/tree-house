@@ -189,7 +189,7 @@ namespace Treehierarchy
                 auto testCsvPath = testModelsDir + "/" + modelName + ".test.csv";
 
                 BuildOptions option;
-                option.enable_ordering = true;
+                option.enable_threshold_dedupe = true;
                 XGBoostParser parser(modelJsonPath, option, stateCsvPath);
 
                 std::cout << modelName << " time consuming: " << RunXGBoostTest(parser, testCsvPath) << "\n";
@@ -232,7 +232,7 @@ namespace Treehierarchy
                 option.enable_swap = true;
                 option.enable_flint = true;
                 option.enable_ra = true;
-                option.enable_ordering = true;
+                option.enable_threshold_dedupe = true;
                 XGBoostParser parser(modelJsonPath, option, stateCsvPath);
 
                 std::cout << modelName << " time consuming: " << RunXGBoostTest(parser, testCsvPath) << "\n";
@@ -277,7 +277,7 @@ namespace Treehierarchy
                 option.enable_flint = true;
                 option.enable_ra = true;
                 option.enable_hoisting = true;
-                option.enable_ordering = true;
+                option.enable_threshold_dedupe = true;
                 XGBoostParser parser(modelJsonPath, option, stateCsvPath);
 
                 std::cout << modelName << " time consuming: " << RunXGBoostTest(parser, testCsvPath) << "\n";
@@ -296,12 +296,12 @@ namespace Treehierarchy
                 auto answerCsvPath = testModelsDir + "/" + modelName + ".answer.csv";
 
                 BuildOptions option;
-                //option.enable_swap = true;
-                //option.enable_flint = true;
-                //option.enable_ra = true;
-                //option.regNum = 16;
-                //option.enable_hoisting = true;
-                option.enable_ordering = true;
+                option.enable_swap = true;
+                option.enable_flint = true;
+                option.regNum = 32;
+                option.enable_threshold_dedupe = true;
+                option.enable_inline = true;
+                option.enable_reorder = true;
                 XGBoostParser parser(modelJsonPath, option, stateCsvPath);
 
                 verifyXGBoostResult(parser, testCsvPath, answerCsvPath);
@@ -322,22 +322,26 @@ namespace Treehierarchy
                 std::filesystem::create_directory(GetRepoPath() + "/xgll");
 
                 BuildOptions option;
-                //option.enable_swap = true;
-                //option.enable_flint = true;
+                option.enable_swap = true;
+                option.enable_flint = true;
                 //option.enable_hoisting = true;
-                option.enable_ordering = true;
+                option.regNum = 32;
+                //option.enable_threshold_dedupe = true;
                 option.enable_inline = true;
+                option.enable_reorder = true;
+                option.enable_reorder_feature = true;
+                //option.enable_reorder_threshold = true;
 
                 XGBoostParser parser(modelJsonPath, option, stateCsvPath);
                 parser.ConstructForest();
                 ModuleOp module = parser.buildHIRModule();
                 module = parser.lowerToLLVMModule();
 
-                llvm::outs() << "File output\n";
+                /*llvm::outs() << "File output\n";
                 std::error_code ec;
                 llvm::raw_fd_ostream filestream(dumpFileName, ec);
 
-                /*filestream << *module;
+                filestream << *module;
                 filestream.flush();
                 exit(0);*/
                 // Tree op error

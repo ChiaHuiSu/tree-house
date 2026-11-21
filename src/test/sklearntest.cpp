@@ -208,11 +208,11 @@ namespace Treehierarchy
                 option.enable_flint = true;
                 //option.enable_hoisting = true;
                 option.regNum = 32;
-                option.enable_threshold_dedupe = true;
+                //option.enable_threshold_dedupe = true;
                 option.enable_inline = true;
                 option.enable_reorder = true;
                 option.enable_reorder_feature = true;
-                option.enable_reorder_threshold = true;
+                //option.enable_reorder_threshold = true;
 
                 SklearnParser parser(modelJsonPath, option);
                 parser.ConstructForest();

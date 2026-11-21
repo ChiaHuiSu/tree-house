@@ -25,6 +25,9 @@
 #include <set>
 #include <fstream>
 
+#include <numeric>
+#include <random>
+
 #include "Tree/TreePasses.h"
 
 namespace mlir::tree {
@@ -220,7 +223,7 @@ public:
                 fout << "POPULATION_SIZE = 3\n";
                 fout << "RECOMBINATION = CLARIST\n";
                 fout << "RUNS = 1\n";
-                fout << "TIME_LIMIT = " << 10 + treeIndices.size() / 10 << '\n';
+                fout << "TIME_LIMIT = " << 1 << '\n';
                 fout.close();
                 // Write .tsp
                 fout.open("reorder.tsp", std::fstream::out);
@@ -287,11 +290,52 @@ public:
                 // Give reversed indices to moveBefore to get forward callOp order
                 // Reversed callOp order should also be fine since the path length is the same
                 std::reverse(indices.begin(), indices.end());
+// Sort by each tree dominant feature                
+#if 0
+                assert(useFeature && !useThreshold && "Enable useFeature and disable useThreshold");
+                std::map<size_t, size_t> maxFeatureIndices;
+                std::vector<size_t> indices;
+                for (int index : treeIndices) {
+                    size_t maxFeatureIndex = 0;
+                    double maxComponent = 0;
+                    for (auto [index, component] : featureDistributions[index])
+                        if (maxComponent < component) {
+                            maxComponent = component;
+                            maxFeatureIndex = index;
+                        }
+                    //llvm::outs() << index << ' ' << maxFeatureIndex << '\n';
+                    maxFeatureIndices[index] = maxFeatureIndex;
+                    indices.push_back(index);
+                }
+                sort(indices.begin(), indices.end(), [&](int lhs, int rhs) {
+                    return maxFeatureIndices[lhs] < maxFeatureIndices[rhs];
+                });
+                for (size_t index = 0; index < indices.size(); ++index) {
+                    MLIRContext *context = callOps[index]->getContext();
+                    llvm::outs() << indices.size() << ' ' << callOps.size() << ' ' << index << ' ' << indices[index] << '\n';
+                    callOps[index].setCalleeAttr(SymbolRefAttr::get(context, std::string("tree_") + std::to_string(indices[index])));
+                }
+// Random order
+#elif 0
+                assert(useFeature && !useThreshold && "Enable useFeature and disable useThreshold");
+                std::map<size_t, size_t> maxFeatureIndices;
+                std::vector<size_t> indices;
+                for (int index : treeIndices) {
+                    indices.push_back(index);
+                }
+                std::random_shuffle(indices.begin(), indices.end());
+                for (size_t index = 0; index < indices.size(); ++index) {
+                    MLIRContext *context = callOps[index]->getContext();
+                    llvm::outs() << indices.size() << ' ' << callOps.size() << ' ' << index << ' ' << indices[index] << '\n';
+                    callOps[index].setCalleeAttr(SymbolRefAttr::get(context, std::string("tree_") + std::to_string(indices[index])));
+                }
+#else
                 for (size_t index = 0; index < indices.size(); ++index) {
                     MLIRContext *context = callOps[index]->getContext();
                     //llvm::outs() << indices.size() << ' ' << tspIndexToTreeIndex.size() << ' ' << callOps.size() << ' ' << index << ' ' << indices[index] << ' ' << tspIndexToTreeIndex[indices[index]] << '\n';
                     callOps[index].setCalleeAttr(SymbolRefAttr::get(context, std::string("tree_") + std::to_string(tspIndexToTreeIndex[indices[index]])));
                 }
+#endif
             });
         });
         // Reorder func::FuncOp
